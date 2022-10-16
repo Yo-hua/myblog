@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import models
 
+
 # Create your models here.
 
 class Category(models.Model):
-    STATUS_NORMAL=1
-    STATUS_DELETE=0
-    STATUS_ITEMS=(
-        (STATUS_NORMAL,'正常'),
-        (STATUS_DELETE,'删除'),
+    STATUS_NORMAL = 1
+    STATUS_DELETE = 0
+    STATUS_ITEMS = (
+        (STATUS_NORMAL, '正常'),
+        (STATUS_DELETE, '删除'),
     )
     name = models.CharField(max_length=50, verbose_name="名称")
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS,
@@ -29,6 +29,27 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def get_navs(cls):
+        categories = cls.objects.filter(status=cls.STATUS_NORMAL)
+        # 避免在函数调用nav_categories,norlmal_categories中多次使用SQL查询
+        # nav_categories = cls.objects.filter(is_nav=True)
+        # norlmal_categories = cls.objects.filter(is_nav=False)
+
+        # 采用低代价的IO方案
+        nav_categories=[]
+        norlmal_categories=[]
+
+        for cate in categories:
+            if cate.is_nav:
+                nav_categories.append(cate)
+            else:
+                norlmal_categories.append(cate)
+        return {
+            'navs': nav_categories,
+            'no_navs': norlmal_categories,
+        }
+
 class Tag(models.Model):
     STATUS_NORMAL = 1
     STATUS_DELETE = 0
@@ -39,7 +60,7 @@ class Tag(models.Model):
 
     name = models.CharField(max_length=10, verbose_name="名称")
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="状态")
-    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     class Meta:
@@ -48,7 +69,6 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Post(models.Model):
     STATUS_NORMAL = 1
@@ -66,12 +86,16 @@ class Post(models.Model):
     content_html = models.TextField(verbose_name="正文html代码", blank=True, editable=False)
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="状态")
     is_md = models.BooleanField(default=False, verbose_name="markdown语法")
-    category = models.ForeignKey(Category, verbose_name="分类", on_delete=models.DO_NOTHING)
-    tag = models.ManyToManyField(Tag, verbose_name="标签")
-    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(Category, verbose_name="分类", on_delete=models.CASCADE)
+    tags = models.ManyToManyField(Tag,default='',verbose_name="标签")
+    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
+    # 页面访问量
     pv = models.PositiveIntegerField(default=1)
+
+
+    # 独立访问数,一台电脑终端为一个访客
     uv = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -82,14 +106,15 @@ class Post(models.Model):
     @staticmethod
     def get_by_tag(tag_id):
         try:
-            tag = Tag.objects.get(id=tag_id)
+            tags = Tag.objects.get(id=tag_id)
         except Tag.DoesNotExist:
-            tag = None
+            tags = None
             post_list = []
         else:
-            post_list = tag.post_set.filter(status=Post.STATUS_NORMAL)\
-                .select_related('owner', 'category')
-        return post_list, tag
+            # 反向查找 tag.post_set.filter
+            post_list = tags.post_set.filter(status=Post.STATUS_NORMAL). \
+                prefetch_related('owner', 'category')
+        return post_list, tags
 
     @staticmethod
     def get_by_category(category_id):
@@ -99,11 +124,20 @@ class Post(models.Model):
             category = None
             post_list = []
         else:
-            post_list = category.post_set.filter(status=Post.STATUS_NORMAL).\
-                select_related('owner', 'category')
+            post_list = category.post_set.filter(status=Post.STATUS_NORMAL). \
+                prefetch_related('owner', 'category')
         return post_list, category
 
     @classmethod
-    def lates_post(cls):
-        queryset=cls.objects.filter(status=cls.STATUS_NORMAL)
+    def latest_posts(cls):
+        queryset = cls.objects.filter(status=cls.STATUS_NORMAL)
         return queryset
+
+    @classmethod
+    def hot_posts(cls):
+        return cls.objects.filter(status=cls.STATUS_NORMAL).order_by('-pv')
+
+    @classmethod
+    def comment_posts(cls):
+        return cls.objects.filter(status=cls.STATUS_NORMAL)
+

@@ -46,7 +46,7 @@ class CategoryAdmin(BaseOwnerAdmin):
 
 @admin.register(Tag)
 class TagAdmin(BaseOwnerAdmin):
-    list_display = ('name', 'status', 'created_time', 'owner')
+    list_display = ('id','name', 'status', 'created_time', 'owner')
     fields = ('name', 'status')
 
     search_fields = ['name']
@@ -74,7 +74,7 @@ class CategoryOnlyOwnerFilter(admin.SimpleListFilter):
 
 @admin.register(Post)
 class PostAdmin(BaseOwnerAdmin):
-    list_display = ('title', 'status', 'category', 'operator', 'owner')
+    list_display = ('title', 'status', 'category', 'get_tags','operator', 'owner')
     list_filter = [CategoryOnlyOwnerFilter]
     search_fields = ['title', 'status', 'category__name']
 
@@ -103,10 +103,14 @@ class PostAdmin(BaseOwnerAdmin):
         }),
         ('额外信息', {
             'classes': ('collapse',),
-            'fields': ('tag',)
+            'fields': ('tags',)
         })
     )
-    filter_horizontal = ('tag',)
+    # filter_horizontal = ('tags',)
+
+    # 获取多对多的tag显示
+    def get_tags(self,instance):
+        return [tag.name for tag in instance.tags.all()]
 
     def operator(self, obj):
         return format_html(
@@ -120,11 +124,4 @@ class PostAdmin(BaseOwnerAdmin):
     def __str__(self):
         return self.name
 
-    # def get_media(self):
-    #     # xadmin基于bootstrap，引入会页面样式冲突，仅供参考, 故注释。
-    #     media = super().get_media()
-    #     media.add_js(['https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js'])
-    #     media.add_css({
-    #         'all': ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css", ),
-    #     })
-    #     return media
+

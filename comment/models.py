@@ -22,3 +22,26 @@ class Comment(models.Model):
 
     class Meta:
         verbose_name = verbose_name_plural = "评论"
+
+
+''' 
+    TEMP MODELS FOR TESTING 
+    测试使用 City Person Book
+'''
+class City(models.Model):
+    # ...
+    pass
+    name=models.CharField(max_length=50,verbose_name='name')
+
+class Person(models.Model):
+    # ...
+    hometown = models.ForeignKey(
+        City,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+
+class Book(models.Model):
+    # ...
+    author = models.ForeignKey(Person, on_delete=models.CASCADE)

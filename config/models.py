@@ -57,8 +57,46 @@ class SideBar(models.Model):
 
     status = models.PositiveIntegerField(default=STATUS_SHOW, choices=STATUS_ITEMS,
                                          verbose_name="状态")
-    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, verbose_name="作者", on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+
+    @classmethod
+    def get_all(cls):
+        return cls.objects.filter(status=cls.STATUS_SHOW)
+
+    @classmethod
+    def get_hot(cls):
+        return cls.objects.filter(status=cls.STATUS_SHOW).filter(display_type=cls.DISPLAY_HOT)
+
+    @classmethod
+    def get_comment(cls):
+        return cls.objects.filter(status=cls.STATUS_SHOW).filter(display_type=cls.DISPLAY_COMMENT)
+
+    @property
+    def content_html(self):
+        ''' 直接渲染成模板 '''
+        from blog.models import Post # 避免循环引用
+        from comment.models import Comment
+
+        result=''
+        if self.display_type==self.DISPLAY_HTML:
+            result=self.content
+        elif self.display_type==self.DISPLAY_LATEST:
+            context={
+                'posts':Post.lates_post()
+            }
+            result = render_to_string('config/blocks/sidebar_post.html', context)
+        elif self.display_type==self.DISPLAY_HOT:
+            context={
+                'posts':Post.hot_post()
+            }
+            result = render_to_string('config/blocks/sidebar_post.html', context)
+        elif self.display_type==self.DISPLAY_COMMENT:
+            context={
+                'comments':Comment.objects.filter(status=Comment.STATUS_NORMAL)
+            }
+            result=render_to_string('config/blocks/sidebar_comments.html', context)
+        return result
 
     class Meta:
         verbose_name = verbose_name_plural = "侧边栏"
