@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}首页{% endblock %} -myblog system-</title>
+</head>
+    <body>
+    <h2>Hi</h2>
+        <div>
+            {% for cate in navs %}
+                分类导航：<a href="{% url 'category-list' cate.id %}">{{ cate.name }}</a>
+            {% endfor %}
+        </div>
+
+    <hr/>
+
+    {% block main %}
+    {% endblock %}
+
+    <hr/>
+
+        <div>
+            <p>底部分类</p>
+            {% for cate in no_navs %}
+            <a href="{% url 'category-list' cate.id %}">{{ cate.name }}</a>
+            {% endfor %}
+        </div>
+
+    <hr/>
+
+        <div>
+                <p>侧边栏展示：最热文章</p>
+                {% for sidebar in sidebars %}
+                    <h4>{{ sidebar.title }}</h4>
+                    {{ sidebar.content_html }}
+                {% endfor %}
+        </div>
+
+    <hr/>
+
+        <div>
+                <p>侧边栏展示：最新评论</p>
+                {% for sidebar in sidebars %}
+                    <h4>{{ sidebar.title }}</h4>
+                    {{ sidebar.content_html }}
+                {% endfor %}
+        </div>
+
+    </body>
+</html>

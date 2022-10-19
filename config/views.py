@@ -8,6 +8,17 @@ from .models import Link
 # Create your views here.
 
 
+class LinkListView(CommonViewMixin,ListView):
+    queryset = Link.objects.filter(status=Link.STATUS_NORMAL)
+    template_name = 'config/links.html'
+    context_object_name = 'link_list'
+
+
+
+
+'''
+以下为参考学习内容可忽略
+'''
 def links(request,example=None):
     content='the links example={example}'.format(example=example)
     return HttpResponse(content)
@@ -20,7 +31,7 @@ def example_res(request,example=None):
         return HttpResponse(content)
     return HttpResponse('example NOT exit')
 
-class LinkListView(CommonViewMixin, ListView):
-    queryset = Link.objects.filter(status=Link.STATUS_NORMAL)
-    template_name = 'config/links.html'
-    context_object_name = 'link_list'
+# class LinkListView(CommonViewMixin, ListView):
+#     queryset = Link.objects.filter(status=Link.STATUS_NORMAL)
+#     template_name = 'config/links.html'
+#     context_object_name = 'link_list'

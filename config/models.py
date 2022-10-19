@@ -83,12 +83,12 @@ class SideBar(models.Model):
             result=self.content
         elif self.display_type==self.DISPLAY_LATEST:
             context={
-                'posts':Post.lates_post()
+                'posts':Post.latest_posts()
             }
             result = render_to_string('config/blocks/sidebar_post.html', context)
         elif self.display_type==self.DISPLAY_HOT:
             context={
-                'posts':Post.hot_post()
+                'posts':Post.latest_posts()
             }
             result = render_to_string('config/blocks/sidebar_post.html', context)
         elif self.display_type==self.DISPLAY_COMMENT:

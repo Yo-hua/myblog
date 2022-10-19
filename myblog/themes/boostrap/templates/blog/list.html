@@ -13,30 +13,16 @@
 
 {% block main %}
     <hr/>
-    <hr/>
     {% for post in post_list %}
     <div class="card post">
         <div class="card-body">
-
             <h5 class="card-title"><a href="{% url 'article-detail' post.id %}">标题：{{ post.title }}</a></h5>
-{#            <span class="card-link">作者:<a href="{% url 'author' post.owner_id %}">{{ post.owner.username }}</a></span>#}
+            <span class="card-link">作者:<a href="{% url 'author' post.owner_id %}">{{ post.owner.username }}</a></span>
             <span class="card-link">分类:<a href="{% url 'category-list' post.category_id %}">{{ post.category.name }}</a></span>
+            <p class="card-text">{{ post.desc }}...</p>
 
-
-{#            <p>category_id {{ post.category_id }}</p>#}
-{#            <p>tags_id {{ post.tag_id }}</p>#}
-{#            <p>post.tags_name {{ post.tags.name }}</p>#}
-{#            <p>post.get_tags {{ post.tags}}</p>#}
-
-            <p>test for </p>
-            <p>test {{ post.tags.name }}</p>
-            <p>test {{ post.tags }}</p>
-            <p>test {{ tags.tag_id }}</p>
-
-            <p class="card-text">{{ post.desc }}<a href="{% url 'article-detail' post.id %}">{{ post.title }}</a>...完整内容</p>
         </div>
     </div>
-    <hr/>
     <hr/>
     {% endfor %}
 

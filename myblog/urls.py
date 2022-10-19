@@ -21,8 +21,11 @@ from blog.views import post_list, post_detail
 from config.views import links, example_res
 
 from blog.views import (MyView, PostViewDetailTest, PostListViewTest, PostDeatilView,
-                        IndexView, CategoryView, TagView)
-from django.views.generic import TemplateView, ListView
+                        IndexView, CategoryView, TagView, SearchView,AuthorView)
+from config.views import LinkListView
+from comment.views import CommentView
+
+# from django.views.generic import TemplateView, ListView
 
 urlpatterns = [
     re_path('^$', post_list),
@@ -38,9 +41,12 @@ urlpatterns = [
     re_path('^category/(?P<category_id>\d+)/$', CategoryView.as_view(), name='category-list'),
     re_path('^tags/(?P<tag_id>\d+)/$', TagView.as_view(), name='tag-list'),
     re_path('^post/(?P<post_id>\d+)/$', PostDeatilView.as_view(), name='article-detail'),
+    re_path('^search/$', SearchView.as_view(), name='serach'),
+    re_path('^author/(?P<owner_id>\d+)/$', AuthorView.as_view(), name='author'),
+    re_path('^links/$',LinkListView.as_view(), name='links'),
+    re_path('^comment/$',CommentView.as_view(),name='comment'),
 
-    re_path('^links/$', links, {'example': 'nop'}, name='links'),
-    re_path('^example_res/$', example_res, {'example': 'This is example'}, name='example_res'),
+    #re_path('^example_res/$', example_res, {'example': 'This is example'}, name='example_res'),
 
     path("admin/", admin.site.urls, name='admin'),
 ]

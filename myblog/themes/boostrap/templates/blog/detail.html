@@ -1,5 +1,5 @@
 {% extends "blog/base.html" %}
-{#{% load comment_block %}#}
+{% load comment_block %}
 {% block title %} {{ post.title }} {% endblock %}
 
 {% block extra_head %}
@@ -25,5 +25,30 @@
     </p>
     {% endif %}
 
-{#    {% comment_block request.path %}#}
+    {% comment_block request.path %}
+    <!-- 以下代码被封装为 comment_block
+    {#    <hr/>#}
+{#    <div class="comment">#}
+{#        <form class="form-group" action="/comment/" method="post">#}
+{#            {% csrf_token %}#}
+{#            <input name="target" type="hidden" value="{{ request.path }}">#}
+{#            {{ comment_form }}#}
+{#            <input type="submit" value="提交评论">#}
+{#        </form>#}
+{##}
+{#        <ul class="list-group">#}
+{#            {% for comment in comment_list %}#}
+{#                <li class="list-group-item">#}
+{#                    <div class="nickname">#}
+{#                        <a href="{{ comment.website }}">{{ comment.nickname }}</a>#}
+{#                        <span>{{ comment.create_time }}</span>#}
+{#                    </div>#}
+{#                    <div class="comment-content">#}
+{#                        {{ comment.content }}#}
+{#                    </div>#}
+{#                </li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    </div>#}
+    -->
 {% endblock %}

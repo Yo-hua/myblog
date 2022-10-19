@@ -1,0 +1,43 @@
+{% extends "blog/base.html" %}
+
+{% block title %}
+    {% if tag %}
+    标签页：{{ tag.name }}
+        {% elif category %}
+    分类页：{{ category.name }}
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    {% if tag %}
+        {{ tag.name }}
+    {% endif %}
+
+    {% if catagory %}
+        {{ category.name }}
+    {% endif %}
+
+    <ul type="square">
+        {% for post in post_list %}
+            <li>
+            文章
+                <a href="{% url 'article-detail' post.id %}">{{ post.title }}</a>
+                <div>
+                    {#                <p>分类：{{ post.category }}</p>#}
+                    <p style="font-weight:bold">作者</p> <span style="color:silver"> {{ post.owner.username }}</span>
+                    <p style="font-weight:bold">时间</p> <span style="color:silver"> {{ post.created_time }}</span>
+                </div>
+                <p>{{ post.desc }}</p>
+            </li>
+        {% endfor %}
+        {% if page_obj %}
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">上一页</a>
+            {% endif %}
+            [Page {{ page_obj.number }} Of {{ page_obj.number.page }}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">下一页</a>
+            {% endif %}
+        {% endif %}
+    </ul>
+{% endblock %}

@@ -11,6 +11,11 @@ from django.views import View
 from django.views.generic import TemplateView, DetailView, ListView
 from django.views.generic.base import ContextMixin
 
+from django.db.models import Q,F
+
+from comment.forms import CommentForm
+from comment.models import Comment
+
 
 # Create your views here.
 class CommonViewMixin(ContextMixin):
@@ -20,6 +25,7 @@ class CommonViewMixin(ContextMixin):
             'sidebars': self.get_sidebars(),
         })
         context.update(self.get_navs())
+        print(context)
         return context
 
     def get_sidebars(self):
@@ -47,8 +53,7 @@ class IndexView(CommonViewMixin, ListView):
         .select_related('owner') \
         .select_related('category') # 取model类
     #print(type(queryset))
-
-    paginate_by = 2 # 明显来自ListView类
+    paginate_by = 3 # 明显来自ListView类
     context_object_name = 'post_list' # 来自ListView类 指定生成当前类的名字 产生新对象的名字
     template_name = 'blog/list.html'
 
@@ -126,7 +131,46 @@ class PostDeatilView(CommonViewMixin, DetailView):
     context_object_name = 'post'
     pk_url_kwarg = 'post_id'
 
+    ## 已抽象评论模块的替代方法
+    # def get_context_data(self, **kwargs):
+    #     context=super().get_context_data(**kwargs)
+    #     context.update({
+    #         'comment_form':CommentForm,
+    #         'comment_list':Comment.get_by_target(self.request.path)
+    #     })
+    #     return context
 
+class SearchView(IndexView):
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data()
+        context.update({
+                'keyword':self.request.GET.get('keyword','')
+            }
+        )
+        #print('SearchView happened')
+        return context
+
+    def get_queryset(self):
+        queryset=super().get_queryset()
+        keyword=self.request.GET.get('keyword')
+        if not keyword:
+            return queryset
+        return queryset.filter(Q(title__icontains=keyword)|Q(desc__icontains=keyword))
+
+class AuthorView(IndexView):
+    def get_queryset(self):
+        queryset=super().get_queryset()
+        author_id=self.kwargs.get('owner_id')
+        return queryset.filter(owner_id=author_id)
+
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data()
+        context.update({
+                'owner_id':self.request.GET.get('owner_id','')
+            }
+        )
+        #print('AuthorView happened')
+        return context
 
 ### 以下为前期测试使用可以忽略
 
